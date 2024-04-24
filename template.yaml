@@ -1,0 +1,222 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  event-driven
+  Sample SAM Template for event-driven
+  
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: nodejs20.x
+
+Resources:
+
+##################
+## Lamda functions - Products##
+###################
+  ProductLambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.loadProducts
+      CodeUri: hello-world
+      Description: Lambda function for all product endpoints
+      Architectures:
+      - x86_64
+      Policies:
+        - AmazonDynamoDBFullAccess
+      Events:
+        LoadProductPath:
+          Type: Api
+          Properties:
+            Path: /loadProducts
+            Method: POST
+            RestApiId: !Ref EcommerceRESTAPI
+        
+  GetProductFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: hello-world/
+      Handler: getproduct.getProduct  # Change this to match the exported function in your JavaScript file
+      Policies: AmazonDynamoDBFullAccess
+      Events:
+        FetchTodos:
+          Type: Api
+          Properties:
+            Path: /products/{product_id}
+            Method: get
+            RestApiId: !Ref EcommerceRESTAPI
+
+  GetallProductsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: hello-world/  # Make sure this is the directory where your getallproducts.js file is located
+      Handler: getallproducts.getProducts  # Change this to match the exported function in your JavaScript file
+      Policies: AmazonDynamoDBFullAccess
+      Events:
+        GetAllProducts:  # Change this to a more descriptive name
+          Type: Api
+          Properties:
+            Path: /products
+            Method: get
+            RestApiId: !Ref EcommerceRESTAPI
+
+  ### Ad Product to cart
+    
+  OrderLambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: 'Lambda function with cart and order endpoints'
+      CodeUri: hello-world/  # Make sure this is the directory where your order.js file is located
+      Handler: addtocart.addToCart  # Change this to match the exported function in your JavaScript file
+      Events:
+        addToCartPath:
+          Type: Api  # More info about API Event Source: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-property-function-api.html
+          Properties:
+            Path: /cart/{user_id}
+            Method: POST
+            RestApiId: !Ref EcommerceRESTAPI
+          #  Auth:
+            #  ApiKeyRequired: true
+  
+  GetCartFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: 'Lambda function to get cart items'
+      CodeUri: hello-world/  # Make sure this is the directory where your getallcartsproducts.js file is located
+      Handler: getallcartsproducts.getCart  # Change this to match the exported function in your JavaScript file
+      Events:
+        GetCartPath:
+          Type: Api  # More info about API Event Source: https://docs
+          Properties:
+            Path: /cart/{user_id}
+            Method: GET
+            RestApiId: !Ref EcommerceRESTAPI
+            
+### ORders Lambdas
+
+  PlaceOrderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: 'Lambda function to place order'
+      CodeUri: hello-world/  # Make sure this is the directory where your placeorder.js file is located
+      Handler: placeorder.placeOrder  # Change this to match the exported function in your JavaScript file
+      Events:
+        PlaceOrderPath:
+          Type: Api  # More info about API Event Source: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-property-function-api.html
+          Properties:
+            Path: /order
+            Method: POST
+            RestApiId: !Ref EcommerceRESTAPI
+
+  
+  EventSourceDDBTableStream:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 1
+      Enabled: True
+      FilterCriteria:
+        Filters:
+          - Pattern: '{ "dynamodb": { "NewImage": { "order_status": { "S": ["ORDERED"] } } } }'
+      EventSourceArn: !GetAtt ProductTable.StreamArn
+      FunctionName: !GetAtt PlaceOrderFunction.Arn
+      StartingPosition: LATEST
+  
+
+
+
+  EcommerceRESTAPI:
+    Type: AWS::Serverless::Api
+    Properties:
+      Description: ecommerce api Optional --> with api-key authentication
+      Name: EcommerceRESTAPI
+      StageName: Dev
+     
+  # RESTAPIAccessLogs:
+  #   Type: AWS::Logs::LogGroup
+  #   Properties:
+  #     LogGroupName: ecommerce-api-Access-Logs
+  #     RetentionInDays: 1
+
+  RESTAPIRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+              - apigateway.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+      - PolicyName: AllowCWIntegration
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+            - Effect: Allow
+              Action:
+                - 'logs:CreateLogGroup'
+                - 'logs:CreateLogStream'
+                - 'logs:DescribeLogGroups'
+                - 'logs:DescribeLogStreams'
+                - 'logs:PutLogEvents'
+                - 'logs:GetLogEvents'
+                - 'logs:FilterLogEvents'
+              Resource: '*'
+
+  # Rest of your template...
+
+
+  ProductTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: GSI1PK
+          AttributeType: S
+        - AttributeName: GSI1SK
+          AttributeType: S
+        - AttributeName: GSI2PK
+          AttributeType: S
+        - AttributeName: GSI2SK
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: userOrders
+          KeySchema:
+            - AttributeName: GSI1PK
+              KeyType: HASH
+            - AttributeName: GSI1SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: orderProducts
+          KeySchema:
+            - AttributeName: GSI2PK
+              KeyType: HASH
+            - AttributeName: GSI2SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+Outputs:
+  EcommerceRESTAPI:
+    Description: "API Gateway endpoint URL for Prod stage for Product Lambda function"
+    Value: !Sub "https://${EcommerceRESTAPI}.execute-api.${AWS::Region}.amazonaws.com/Prod/loadProducts/"
+  ProductLambdaFunction:
+    Description: "Product Lambda Function ARN"
+    Value: !GetAtt ProductLambdaFunction.Arn
+  RESTAPIRole:
+    Description: "Implicit IAM Role created for Product Lambda function"
+    Value: !GetAtt RESTAPIRole.Arn
