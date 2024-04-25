@@ -1,8 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  event-driven
-  Sample SAM Template for event-driven
+  event-driven Sample SAM Template for event-driven
   
 Globals:
   Function:
@@ -10,10 +9,6 @@ Globals:
     Runtime: nodejs20.x
 
 Resources:
-
-##################
-## Lamda functions - Products##
-###################
   ProductLambdaFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -36,8 +31,8 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: hello-world/
-      Handler: getproduct.getProduct  # Change this to match the exported function in your JavaScript file
-      Policies: AmazonDynamoDBFullAccess
+      Handler: getproduct.getProduct
+      Policies: [AmazonDynamoDBFullAccess]
       Events:
         FetchTodos:
           Type: Api
@@ -49,66 +44,98 @@ Resources:
   GetallProductsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: hello-world/  # Make sure this is the directory where your getallproducts.js file is located
-      Handler: getallproducts.getProducts  # Change this to match the exported function in your JavaScript file
-      Policies: AmazonDynamoDBFullAccess
+      CodeUri: hello-world/
+      Handler: getallproducts.getProducts
+      Policies: [AmazonDynamoDBFullAccess]
       Events:
-        GetAllProducts:  # Change this to a more descriptive name
+        GetAllProducts:
           Type: Api
           Properties:
             Path: /products
             Method: get
             RestApiId: !Ref EcommerceRESTAPI
 
-  ### Ad Product to cart
-    
   OrderLambdaFunction:
     Type: AWS::Serverless::Function
     Properties:
       Description: 'Lambda function with cart and order endpoints'
-      CodeUri: hello-world/  # Make sure this is the directory where your order.js file is located
-      Handler: addtocart.addToCart  # Change this to match the exported function in your JavaScript file
+      CodeUri: hello-world/
+      Handler: addtocart.addToCart
       Events:
         addToCartPath:
-          Type: Api  # More info about API Event Source: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-property-function-api.html
+          Type: Api
           Properties:
             Path: /cart/{user_id}
             Method: POST
             RestApiId: !Ref EcommerceRESTAPI
-          #  Auth:
-            #  ApiKeyRequired: true
   
   GetCartFunction:
     Type: AWS::Serverless::Function
     Properties:
       Description: 'Lambda function to get cart items'
-      CodeUri: hello-world/  # Make sure this is the directory where your getallcartsproducts.js file is located
-      Handler: getallcartsproducts.getCart  # Change this to match the exported function in your JavaScript file
+      CodeUri: hello-world/
+      Handler: getallcartsproducts.getCart
+      Policies:
+        - AmazonDynamoDBReadOnlyAccess
+        - AmazonSQSFullAccess
       Events:
         GetCartPath:
-          Type: Api  # More info about API Event Source: https://docs
+          Type: Api
           Properties:
             Path: /cart/{user_id}
             Method: GET
             RestApiId: !Ref EcommerceRESTAPI
             
-### ORders Lambdas
+  
+
 
   PlaceOrderFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Description: 'Lambda function to place order'
-      CodeUri: hello-world/  # Make sure this is the directory where your placeorder.js file is located
-      Handler: placeorder.placeOrder  # Change this to match the exported function in your JavaScript file
+      CodeUri: hello-world/
+      Handler: placeorder.placeOrder
+      Runtime: nodejs20.x
+      Policies:
+        - AmazonDynamoDBFullAccess
+        - Statement:
+            - Effect: "Allow"
+              Action:
+                - "dynamodb:GetRecords"
+                - "dynamodb:GetShardIterator"
+                - "dynamodb:DescribeStream"
+                - "dynamodb:ListStreams"
+              Resource: !GetAtt ProductTable.StreamArn
       Events:
-        PlaceOrderPath:
-          Type: Api  # More info about API Event Source: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-property-function-api.html
+        OrderPath:
+          Type: Api
           Properties:
             Path: /order
             Method: POST
             RestApiId: !Ref EcommerceRESTAPI
-
+   
   
+  ProcessCartProductsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: process_cart_products.handler
+      CodeUri: hello-world/
+      Description: Lambda function listens to dynamodb streams, gets order and sends order to sqs
+      Architectures:
+      - x86_64
+      Policies:
+        - DynamoDBStreamReadPolicy:
+            TableName: !Ref ProductTable
+            StreamName: !Select [3, !Split ["/", !GetAtt ProductTable.StreamArn]]
+      Events:
+        Stream:
+          Type: DynamoDB
+          Properties:
+            Stream: !GetAtt ProductTable.StreamArn
+            StartingPosition: LATEST
+            BatchSize: 1
+
+
+
   EventSourceDDBTableStream:
     Type: AWS::Lambda::EventSourceMapping
     Properties:
@@ -118,25 +145,54 @@ Resources:
         Filters:
           - Pattern: '{ "dynamodb": { "NewImage": { "order_status": { "S": ["ORDERED"] } } } }'
       EventSourceArn: !GetAtt ProductTable.StreamArn
-      FunctionName: !GetAtt PlaceOrderFunction.Arn
+      FunctionName: !GetAtt ProcessCartProductsFunction.Arn
       StartingPosition: LATEST
-  
 
 
 
+  UpdateCartProductsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: update_cart_products.lambda_handler
+      CodeUri: hello-world/
+      Description: Lambda function pulls the sqs queue messages and processes the order items
+      Architectures:
+      - x86_64
+      Policies:
+        - AmazonSQSFullAccess
+        - AmazonDynamoDBFullAccess
+      Events:
+        RetrieveFromSQS:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt UpdateCartProductsSQS.Arn
+            BatchSize: 5
+            FunctionResponseTypes:
+              - ReportBatchItemFailures
+
+    
+
+  UpdateCartProductsSQS:
+    Type: AWS::SQS::Queue
+    Properties:
+      VisibilityTimeout: 300
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt UpdateCartProductsDLQ.Arn
+        maxReceiveCount: 5
+  UpdateCartProductsDLQ:
+    Type: AWS::SQS::Queue
+
+
+
+
+
+    
   EcommerceRESTAPI:
     Type: AWS::Serverless::Api
     Properties:
       Description: ecommerce api Optional --> with api-key authentication
       Name: EcommerceRESTAPI
       StageName: Dev
-     
-  # RESTAPIAccessLogs:
-  #   Type: AWS::Logs::LogGroup
-  #   Properties:
-  #     LogGroupName: ecommerce-api-Access-Logs
-  #     RetentionInDays: 1
-
   RESTAPIRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -149,6 +205,7 @@ Resources:
               - apigateway.amazonaws.com
             Action:
               - 'sts:AssumeRole'
+
       Policies:
       - PolicyName: AllowCWIntegration
         PolicyDocument:
@@ -165,7 +222,6 @@ Resources:
                 - 'logs:FilterLogEvents'
               Resource: '*'
 
-  # Rest of your template...
 
 
   ProductTable:
@@ -209,6 +265,9 @@ Resources:
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
+  
+
+
 
 Outputs:
   EcommerceRESTAPI:
