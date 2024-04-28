@@ -5,7 +5,7 @@ const sqs = new AWS.SQS({apiVersion: '2012-11-05'});
 const sqsQueueUrl = 'https://sqs.eu-central-1.amazonaws.com/506820257931/product-UpdateCartProductsSQS-gigk8mFysWGX'; // Update this with your queue URL
 
 exports.handler = async (event) => {
-    // Multiple records can be delivered in a single event
+    
     for (const record of event.Records) {
         if (record.eventName === 'INSERT') {
             

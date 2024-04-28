@@ -1,6 +1,7 @@
 const AWS = require('aws-sdk');
 const XRay = require('aws-xray-sdk-core');
 const log = require('lambda-log');
+const sns = new AWS.SNS();
 
 AWS.config.logger = log.log;
 

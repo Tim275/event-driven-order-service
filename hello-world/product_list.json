@@ -28,8 +28,35 @@
                     "eu",
                     "tempor"
                 ]
+            },
+            {
+                "createdDate": "2022-01-01T04:08:28 -01:00",
+                "package": {
+                    "length": "50",
+                    "width": "300",
+                    "weight": "500",
+                    "height": "70"
+                },
+                "pictures": [
+                    "https://i.pinimg.com/564x/30/90/f6/3090f63b47d642ac1be6b059e2820946.jpg"  
+                ],
+                "modifiedDate": "2022-01-01T10:28:49 -02:00",
+                "name": "Fresh Strawberries",
+                "category": "fruit",
+                "SK": "PRODUCT#11663d33-e54d-49da-ba6f-44d016ecde7b",
+                "price": "2000",
+                "description": "Fresh strawberries.",
+                "PK": "PRODUCT",
+                "productId": "11663d33-e54d-49da-ba6f-44d016ecde7b",
+                "tags": [
+                    "strawberries",
+                    "fruit",
+                    "fresh"
+                ]
             }
+           
         ],
-   "total":20
+        "total": 21 
     }
 }
+
