@@ -1,5 +1,7 @@
 import AWS from 'aws-sdk';
-import product_list from './product_list.json' assert { type: 'json' };
+//import product_list from './product_list.json' assert { type: 'json' };
+import product_list from './product_list.json';
+
 
 const dynamoDB = new AWS.DynamoDB.DocumentClient();
 

@@ -1,0 +1,62 @@
+{
+    "statusCode": 200,
+    "body": {
+        "products": [
+            {
+                "createdDate": "2018-11-08T04:08:28 -01:00",
+                "package": {
+                    "length": "57",
+                    "width": "367",
+                    "weight": "653",
+                    "height": "81"
+                },
+                "pictures": [
+                    "https://img.freepik.com/free-photo/pineapple_144627-22187.jpg?w=740&t=st=1689112269~exp=1689112869~hmac=c51ba1a12af7082f702398fefaa2134f190504cc19210c5429499543d0ad5ba6"
+                ],
+                "modifiedDate": "2019-10-11T10:28:49 -02:00",
+                "name": "Fresh Pineapples",
+                "category": "vegetable",
+                "SK": "PRODUCT#11663d33-e54d-49da-ba6f-44d016ecde7e",
+                "price": "2780",
+                "description": "Pariatur deserunt nostrud cupidatat ut officia voluptate adipisicing mollit sunt cillum quis magna dolore aute.",
+                "PK": "PRODUCT",
+                "productId": "11663d33-e54d-49da-ba6f-44d016ecde7e",
+                "tags": [
+                    "incididunt",
+                    "in",
+                    "adipisicing",
+                    "eu",
+                    "tempor"
+                ]
+            },
+            {
+                "createdDate": "2022-01-01T04:08:28 -01:00",
+                "package": {
+                    "length": "50",
+                    "width": "300",
+                    "weight": "500",
+                    "height": "70"
+                },
+                "pictures": [
+                    "https://i.pinimg.com/564x/30/90/f6/3090f63b47d642ac1be6b059e2820946.jpg"  
+                ],
+                "modifiedDate": "2022-01-01T10:28:49 -02:00",
+                "name": "Fresh Strawberries",
+                "category": "fruit",
+                "SK": "PRODUCT#11663d33-e54d-49da-ba6f-44d016ecde7b",
+                "price": "2000",
+                "description": "Fresh strawberries.",
+                "PK": "PRODUCT",
+                "productId": "11663d33-e54d-49da-ba6f-44d016ecde7b",
+                "tags": [
+                    "strawberries",
+                    "fruit",
+                    "fresh"
+                ]
+            }
+           
+        ],
+        "total": 21 
+    }
+}
+

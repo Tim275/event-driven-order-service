@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "hello world sample for NodeJS",
   "main": "app.js",
-  "repository": "https://github.com/awslabs/aws-sam-cli/tree/develop/samcli/local/init/templates/cookiecutter-aws-sam-hello-nodejs",
+  "repository": "https://github.com/Tim275/event-driven-order-service-backend",
   "author": "SAM CLI",
   "license": "MIT",
   "dependencies": {
@@ -11,10 +11,22 @@
     "axios": ">=1.6.0"
   },
   "scripts": {
-    "test": "mocha tests/unit/"
+    "test": "jest"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.m?js$": "babel-jest"
+    },
+    "testMatch": [
+      "**/?(*.)+(spec|test).[jt]s?(x)",
+      "**/?(*.)+(spec|test).mjs"
+    ]
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.24.4",
+    "aws-sdk-mock": "^5.9.0",
     "chai": "^4.3.6",
+    "jest": "^29.7.0",
     "mocha": "^10.2.0"
   }
 }
