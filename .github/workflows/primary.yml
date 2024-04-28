@@ -58,6 +58,7 @@ jobs:
           sam build
       - name: Run unit tests
         run: |
+          cd product/hello-world/
           npm install
           npm test
     #  - name: Run unit tests
