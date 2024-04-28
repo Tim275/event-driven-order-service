@@ -68,10 +68,9 @@ jobs:
         run: |
           # Run SAM Deploy
           sam deploy --template-file .aws-sam/build/template.yaml \
-            --stack-name ${{ steps.vars.outputs.environment }} \
+            --stack-name event-driven \
             --s3-bucket samartifactbuckettm \
             --parameter-overrides \
-              'ParameterKey=Name,ParameterValue=example \
-              ParameterKey=Version,ParameterValue=${{ steps.vars.outputs.version }}' \
+              'ParameterKey=Name,ParameterValue=example' \
             --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM
             
