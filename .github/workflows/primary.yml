@@ -58,7 +58,11 @@ jobs:
           sam build
       - name: Run unit tests
         run: |
-          python3 -m pytest -s -vvv ./tests/unit/
+          npm install
+          npm test
+    #  - name: Run unit tests
+    #    run: |
+   #       python3 -m pytest -s -vvv ./tests/unit/ siehe: https://github.com/aws-samples/aws-sam-github-actions-example/tree/main
       - name: SAM Deploy
         run: |
           # Create S3 Bucket to store code
