@@ -72,3 +72,4 @@ jobs:
               'ParameterKey=Name,ParameterValue=example \
               ParameterKey=Version,ParameterValue=${{ steps.vars.outputs.version }}' \
             --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM
+            
