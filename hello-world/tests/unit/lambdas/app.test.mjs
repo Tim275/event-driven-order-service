@@ -16,11 +16,14 @@ describe('loadProducts', () => {
 it('should return 500 when there is an error', async () => {
     AWSMock.mock('DynamoDB.DocumentClient', 'batchWrite', Promise.reject(new Error('some error happened')));
 
+    let error;
     try {
         await loadProducts();
     } catch (err) {
-        expect(err.message).toEqual('some error happened');
+        error = err;
     }
+    expect(error).toBeDefined();
+    expect(error.message).toEqual('some error happened');
 });
 
 }); 
