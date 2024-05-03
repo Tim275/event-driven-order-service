@@ -193,6 +193,10 @@ Resources:
       Description: ecommerce api Optional --> with api-key authentication
       Name: EcommerceRESTAPI
       StageName: Dev
+      Cors:
+        AllowMethods: "'*'"
+        AllowHeaders: "'*'"
+        AllowOrigin: "'*'"
   RESTAPIRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -205,6 +209,7 @@ Resources:
               - apigateway.amazonaws.com
             Action:
               - 'sts:AssumeRole'
+
 
       Policies:
       - PolicyName: AllowCWIntegration
