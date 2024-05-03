@@ -1,9 +1,12 @@
-// app.test.mjs
-import AWS from 'aws-sdk';
-import AWSMock from 'aws-sdk-mock';
-import { loadProducts } from '../../../app.mjs';
+// getProducts.test.js
+const AWS = require('aws-sdk');
+const AWSMock = require('aws-sdk-mock');
+const { getProducts } = require('../../../getallproducts.js');
 
-describe('loadProducts', () => {
+// Set the region
+AWS.config.update({region: 'us-west-2'}); // replace 'us-west-2' with your region
+
+describe('getProducts', () => {
   beforeEach(() => {
     AWSMock.setSDKInstance(AWS);
   });
@@ -12,23 +15,21 @@ describe('loadProducts', () => {
     AWSMock.restore('DynamoDB.DocumentClient');
   });
 
-  it('should return 200 when products are loaded successfully', async () => {
-    AWSMock.mock('DynamoDB.DocumentClient', 'batchWrite', () => {
-      return Promise.resolve({});
+  it('should return all products', async () => {
+    const mockItems = [
+      { PK: 'PRODUCT', SK: 'PRODUCT#1', name: 'Product 1' },
+      { PK: 'PRODUCT', SK: 'PRODUCT#2', name: 'Product 2' },
+    ];
+
+    AWSMock.mock('DynamoDB.DocumentClient', 'query', (params, callback) => {
+      callback(null, { Items: mockItems, LastEvaluatedKey: undefined });
     });
 
-    const response = await loadProducts();
+    const response = await getProducts();
+    const body = JSON.parse(response.body);
+
     expect(response.statusCode).toEqual(200);
-    expect(JSON.parse(response.body).message).toEqual('uploaded successfully');
-  });
-
-  it('should return 500 when there is an error', async () => {
-    AWSMock.mock('DynamoDB.DocumentClient', 'batchWrite', () => {
-      return Promise.reject(new Error('some error happened'));
-    });
-
-    const response = await loadProducts();
-    expect(response.statusCode).toEqual(500);
-    expect(JSON.parse(response.body).message).toEqual('some error happened');
+    expect(body.products).toEqual(mockItems);
+    expect(body.total).toEqual(mockItems.length);
   });
 });
