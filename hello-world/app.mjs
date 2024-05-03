@@ -86,3 +86,4 @@ export const loadProducts = async (event) => {
         throw err;
     }
 };
+};
