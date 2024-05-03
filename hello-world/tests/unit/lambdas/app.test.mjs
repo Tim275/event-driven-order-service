@@ -13,8 +13,8 @@ describe('loadProducts', () => {
   });
 
   it('should return 200 when products are loaded successfully', async () => {
-    AWSMock.mock('DynamoDB.DocumentClient', 'batchWrite', (params, callback) => {
-      callback(null, {});
+    AWSMock.mock('DynamoDB.DocumentClient', 'batchWrite', () => {
+      return Promise.resolve({});
     });
 
     const response = await loadProducts();
@@ -23,8 +23,8 @@ describe('loadProducts', () => {
   });
 
   it('should return 500 when there is an error', async () => {
-    AWSMock.mock('DynamoDB.DocumentClient', 'batchWrite', (params, callback) => {
-      callback(new Error('some error happened'));
+    AWSMock.mock('DynamoDB.DocumentClient', 'batchWrite', () => {
+      return Promise.reject(new Error('some error happened'));
     });
 
     const response = await loadProducts();
