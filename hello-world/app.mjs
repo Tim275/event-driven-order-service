@@ -8,7 +8,7 @@ const dynamoDB = new AWS.DynamoDB.DocumentClient();
 export const loadProducts = async (event) => {
     const params = {
         RequestItems: {
-            "productevent-ProductTable-19Q01SO90P4MU": product_list.body.products.map(item => ({
+            "product-ProductTable-10KRR92B0DTB6": product_list.body.products.map(item => ({
                 PutRequest: {
                     Item: {
                         PK: item.PK,

@@ -32,7 +32,7 @@ exports.placeOrder = async (event) => {
     };
 
     const params = {
-        TableName: 'productevent-ProductTable-19Q01SO90P4MU', // update this with your table name
+        TableName: 'product-ProductTable-10KRR92B0DTB6', // update this with your table name
         Item: item
     };
 

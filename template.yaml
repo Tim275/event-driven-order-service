@@ -19,6 +19,7 @@ Resources:
       - x86_64
       Policies:
         - AmazonDynamoDBFullAccess
+        - AWSLambdaExecute
       Events:
         LoadProductPath:
           Type: Api

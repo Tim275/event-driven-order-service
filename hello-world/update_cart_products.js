@@ -6,7 +6,7 @@ const sns = new AWS.SNS();
 AWS.config.logger = log.log;
 
 const dynamoDB = new AWS.DynamoDB.DocumentClient();
-const tableName = 'productevent-ProductTable-19Q01SO90P4MU';
+const tableName = 'product-ProductTable-10KRR92B0DTB6';
 
 const captureRecordHandler = XRay.captureAsyncFunc('recordHandler', async (subsegment, record) => {
   const payload = JSON.parse(record.body);
