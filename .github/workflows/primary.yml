@@ -32,7 +32,7 @@ jobs:
           sam validate
       - name: SAM Build
         run: |
-          sam build --cached --parallel
+          sam build --use-container
       - name: Run unit tests
         run: |
           cd hello-world/
