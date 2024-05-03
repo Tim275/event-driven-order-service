@@ -50,6 +50,7 @@ export const loadProducts = async (event) => {
 };
 */
 
+
 export const loadProducts = async (event) => {
     const params = {
         RequestItems: {
@@ -85,5 +86,4 @@ export const loadProducts = async (event) => {
         console.log(err);
         throw err;
     }
-};
 };
