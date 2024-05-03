@@ -2,7 +2,6 @@
 import AWS from 'aws-sdk';
 import AWSMock from 'aws-sdk-mock';
 import { loadProducts } from '../../../app.mjs';
-import product_list from './product_list.json';
 
 describe('loadProducts', () => {
   beforeEach(() => {
@@ -13,19 +12,23 @@ describe('loadProducts', () => {
     AWSMock.restore('DynamoDB.DocumentClient');
   });
 
-it('should return 500 when there is an error', async () => {
-    AWSMock.mock('DynamoDB.DocumentClient', 'batchWrite', () => {
-        return Promise.reject(new Error('some error happened'));
+  it('should return 200 when products are loaded successfully', async () => {
+    AWSMock.mock('DynamoDB.DocumentClient', 'batchWrite', (params, callback) => {
+      callback(null, {});
     });
 
-    let error;
-    try {
-        await loadProducts();
-    } catch (err) {
-        error = err;
-    }
-    expect(error).toBeDefined();
-    expect(error.message).toEqual('some error happened');
-});
+    const response = await loadProducts();
+    expect(response.statusCode).toEqual(200);
+    expect(JSON.parse(response.body).message).toEqual('uploaded successfully');
+  });
 
-}); 
+  it('should return 500 when there is an error', async () => {
+    AWSMock.mock('DynamoDB.DocumentClient', 'batchWrite', (params, callback) => {
+      callback(new Error('some error happened'));
+    });
+
+    const response = await loadProducts();
+    expect(response.statusCode).toEqual(500);
+    expect(JSON.parse(response.body).message).toEqual('some error happened');
+  });
+});
