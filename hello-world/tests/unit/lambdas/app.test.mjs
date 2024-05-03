@@ -14,8 +14,8 @@ describe('loadProducts', () => {
   });
 
 it('should return 500 when there is an error', async () => {
-    AWSMock.mock('DynamoDB.DocumentClient', 'batchWrite', (params, callback) => {
-        callback(new Error('some error happened'), null);
+    AWSMock.mock('DynamoDB.DocumentClient', 'batchWrite', () => {
+        return Promise.reject(new Error('some error happened'));
     });
 
     let error;
