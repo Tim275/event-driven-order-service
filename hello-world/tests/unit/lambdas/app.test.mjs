@@ -13,12 +13,8 @@ describe('loadProducts', () => {
     AWSMock.restore('DynamoDB.DocumentClient');
   });
 
-  // Removed the failing test
-
   it('should return 500 when there is an error', async () => {
-    AWSMock.mock('DynamoDB.DocumentClient', 'batchWrite', (params, callback) => {
-      callback(new Error('some error happened'), null);
-    });
+    AWSMock.mock('DynamoDB.DocumentClient', 'batchWrite', Promise.reject(new Error('some error happened')));
 
     const response = await loadProducts();
 
