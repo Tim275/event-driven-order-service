@@ -30,7 +30,6 @@ export const loadProducts = async (event) => {
 
     try {
         await dynamoDB.batchWrite(params).promise();
-
         return {
             statusCode: 200,
             body: JSON.stringify({
@@ -42,7 +41,7 @@ export const loadProducts = async (event) => {
         return {
             statusCode: 500,
             body: JSON.stringify({
-                message: 'some error happened',
+                message: err.message,
             }),
         };
     }
