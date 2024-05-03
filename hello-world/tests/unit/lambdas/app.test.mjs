@@ -1,10 +1,11 @@
 // getProducts.test.js
 const AWS = require('aws-sdk');
 const AWSMock = require('aws-sdk-mock');
-const { getProducts } = require('../../../getallproducts.js');
-
+const { getProducts } = require('../../../../hello-world/getallproducts');
 // Set the region
-AWS.config.update({region: 'us-west-2'}); // replace 'us-west-2' with your region
+AWS.config.update({region: 'eu-central-1'}); // replace 'eu-central-1' with your region
+
+
 
 describe('getProducts', () => {
   beforeEach(() => {
@@ -22,7 +23,7 @@ describe('getProducts', () => {
     ];
 
     AWSMock.mock('DynamoDB.DocumentClient', 'query', (params, callback) => {
-      callback(null, { Items: mockItems, LastEvaluatedKey: undefined });
+      callback(null, { Items: mockItems });
     });
 
     const response = await getProducts();
